@@ -15,11 +15,6 @@ The platform helps business owners:
 The system is built with an **offline-first architecture** to function in low-connectivity environments.
 
 ---
-Here is a professional **GitHub README.md** tailored specifically to your project and aligned with your requirement analysis document .
-
-You can copy this directly into your `README.md` file.
-
----
 
 ## 🎯 Objectives
 

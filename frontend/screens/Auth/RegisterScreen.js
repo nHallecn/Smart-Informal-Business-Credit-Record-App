@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
+import { ScrollView, Text, TextInput, StyleSheet, Alert } from 'react-native';
 import CustomButton from '../../components/CustomButton';
 import api from '../../config/api';
 
@@ -19,7 +19,7 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <Text style={styles.title}>Register</Text>
       <TextInput
         style={styles.input}
@@ -50,16 +50,19 @@ const RegisterScreen = ({ navigation }) => {
         style={styles.secondaryButton}
         textStyle={styles.secondaryButtonText}
       />
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f7fafc',
+  },
+  contentContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#f7fafc',
   },
   title: {
     fontSize: 32,

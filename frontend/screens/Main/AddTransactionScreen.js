@@ -1,8 +1,17 @@
+<<<<<<< Updated upstream
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Alert, Picker } from 'react-native';
 import CustomButton from '../../components/CustomButton';
 import { addTransaction } from '../../utils/database';
 import useAuth from '../../hooks/useAuth';
+=======
+import React, { useState } from 'react';
+import { ScrollView, Text, TextInput, StyleSheet, Alert, View } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import CustomButton from '../../components/CustomButton';
+import { addTransaction } from '../../utils/database';
+import useAuth from '../../hooks/useAuth';
+>>>>>>> Stashed changes
 
 const AddTransactionScreen = ({ navigation }) => {
   const { userId } = useAuth();
@@ -10,6 +19,15 @@ const AddTransactionScreen = ({ navigation }) => {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [mobileMoneyRef, setMobileMoneyRef] = useState('');
+  const [description, setDescription] = useState('');
+
+  const isMobileMoney =
+    type === 'mobile_money_in' ||
+    type === 'mobile_money_out' ||
+    paymentMethod === 'mtn_momo' ||
+    paymentMethod === 'orange_money' ||
+    paymentMethod === 'mobile_money';
 
   const handleAddTransaction = async () => {
     if (!amount || !category) {
@@ -26,7 +44,9 @@ const AddTransactionScreen = ({ navigation }) => {
       type,
       amount: parseFloat(amount),
       category,
+      description: description.trim() || null,
       paymentMethod,
+      mobileMoneyRef: mobileMoneyRef.trim() || null,
       date: new Date().toISOString(),
     };
 
@@ -41,7 +61,7 @@ const AddTransactionScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <Text style={styles.title}>Add New Transaction</Text>
 
       <Text style={styles.label}>Type</Text>
@@ -52,6 +72,8 @@ const AddTransactionScreen = ({ navigation }) => {
       >
         <Picker.Item label="Sale" value="sale" />
         <Picker.Item label="Expense" value="expense" />
+        <Picker.Item label="Mobile Money In" value="mobile_money_in" />
+        <Picker.Item label="Mobile Money Out" value="mobile_money_out" />
       </Picker>
 
       <Text style={styles.label}>Amount</Text>
@@ -78,19 +100,47 @@ const AddTransactionScreen = ({ navigation }) => {
         onValueChange={(itemValue) => setPaymentMethod(itemValue)}
       >
         <Picker.Item label="Cash" value="cash" />
-        <Picker.Item label="Mobile Money" value="mobile_money" />
+        <Picker.Item label="MTN MoMo" value="mtn_momo" />
+        <Picker.Item label="Orange Money" value="orange_money" />
+        <Picker.Item label="Other Mobile Money" value="mobile_money" />
+        <Picker.Item label="Bank Transfer" value="bank_transfer" />
       </Picker>
 
+      {isMobileMoney && (
+        <View>
+          <Text style={styles.label}>Mobile Money Reference</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g., MOMO123456789"
+            value={mobileMoneyRef}
+            onChangeText={setMobileMoneyRef}
+            autoCapitalize="characters"
+          />
+        </View>
+      )}
+
+      <Text style={styles.label}>Notes</Text>
+      <TextInput
+        style={[styles.input, styles.notesInput]}
+        placeholder="Optional details"
+        value={description}
+        onChangeText={setDescription}
+        multiline
+      />
+
       <CustomButton title="Add Transaction" onPress={handleAddTransaction} />
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#f7fafc',
+  },
+  contentContainer: {
+    padding: 20,
+    paddingBottom: 36,
   },
   title: {
     fontSize: 28,
@@ -119,6 +169,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
     marginBottom: 10,
+  },
+  notesInput: {
+    minHeight: 86,
+    textAlignVertical: 'top',
+    marginBottom: 8,
   },
 });
 

@@ -1,6 +1,12 @@
+<<<<<<< Updated upstream
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
 import api from '../../config/api';
+=======
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator, TouchableOpacity, Linking, Share, Platform } from 'react-native';
+import api, { API_BASE_URL } from '../../config/api';
+>>>>>>> Stashed changes
 import useAuth from '../../hooks/useAuth';
 import CustomButton from '../../components/CustomButton';
 
@@ -60,15 +66,50 @@ const ReportsScreen = () => {
     }
   };
 
+  const getShareUrl = (shareToken) => `${API_BASE_URL}/reports/share/${shareToken}`;
+
+  const handleShareReport = async (item) => {
+    if (!item.shareToken) {
+      Alert.alert('Error', 'This report does not have a share link yet. Generate a new report.');
+      return;
+    }
+
+    const shareUrl = getShareUrl(item.shareToken);
+    try {
+      if (Platform.OS === 'web' && navigator?.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+        Alert.alert('Link Copied', 'The lender report link has been copied.');
+        return;
+      }
+
+      await Share.share({
+        message: `Financial report: ${shareUrl}`,
+        url: shareUrl,
+        title: 'Financial Report',
+      });
+    } catch (error) {
+      console.error('Error sharing report:', error);
+      Alert.alert('Error', 'Could not share this report link.');
+    }
+  };
+
   const renderReportItem = ({ item }) => (
     <View style={styles.reportItem}>
-      <View>
+      <View style={styles.reportTextBlock}>
         <Text style={styles.reportType}>{item.type.toUpperCase()} Report</Text>
         <Text style={styles.reportDate}>Generated: {new Date(item.generatedAt).toLocaleDateString()}</Text>
+        {item.shareExpiresAt && (
+          <Text style={styles.reportDate}>Share expires: {new Date(item.shareExpiresAt).toLocaleDateString()}</Text>
+        )}
       </View>
-      <TouchableOpacity onPress={() => handleViewReport(item.url)} style={styles.viewButton}>
-        <Text style={styles.viewButtonText}>View</Text>
-      </TouchableOpacity>
+      <View style={styles.reportActions}>
+        <TouchableOpacity onPress={() => handleViewReport(item.url)} style={styles.viewButton}>
+          <Text style={styles.viewButtonText}>View</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleShareReport(item)} style={styles.shareButton}>
+          <Text style={styles.shareButtonText}>Share</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -82,33 +123,35 @@ const ReportsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Your Financial Reports</Text>
+      <FlatList
+        data={reports}
+        keyExtractor={(item) => item.id}
+        renderItem={renderReportItem}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={(
+          <View>
+            <Text style={styles.title}>Your Financial Reports</Text>
 
-      <View style={styles.generateButtonsContainer}>
-        <CustomButton
-          title={generating ? "Generating..." : "Generate Monthly Report"}
-          onPress={() => handleGenerateReport('monthly')}
-          disabled={generating}
-          style={styles.generateButton}
-        />
-        <CustomButton
-          title={generating ? "Generating..." : "Generate Weekly Report"}
-          onPress={() => handleGenerateReport('weekly')}
-          disabled={generating}
-          style={styles.generateButton}
-        />
-      </View>
+            <View style={styles.generateButtonsContainer}>
+              <CustomButton
+                title={generating ? "Generating..." : "Generate Monthly Report"}
+                onPress={() => handleGenerateReport('monthly')}
+                disabled={generating}
+                style={styles.generateButton}
+              />
+              <CustomButton
+                title={generating ? "Generating..." : "Generate Weekly Report"}
+                onPress={() => handleGenerateReport('weekly')}
+                disabled={generating}
+                style={styles.generateButton}
+              />
+            </View>
 
-      <Text style={styles.sectionTitle}>Previous Reports</Text>
-      {reports.length > 0 ? (
-        <FlatList
-          data={reports}
-          keyExtractor={(item) => item.id}
-          renderItem={renderReportItem}
-        />
-      ) : (
-        <Text style={styles.noReportsText}>No reports generated yet.</Text>
-      )}
+            <Text style={styles.sectionTitle}>Previous Reports</Text>
+          </View>
+        )}
+        ListEmptyComponent={<Text style={styles.noReportsText}>No reports generated yet.</Text>}
+      />
     </View>
   );
 };
@@ -116,8 +159,11 @@ const ReportsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#f7fafc',
+  },
+  listContent: {
+    padding: 20,
+    paddingBottom: 40,
   },
   centered: {
     flex: 1,
@@ -163,6 +209,10 @@ const styles = StyleSheet.create({
     shadowRadius: 1.41,
     elevation: 2,
   },
+  reportTextBlock: {
+    flex: 1,
+    paddingRight: 12,
+  },
   reportType: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -179,7 +229,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 10,
   },
+  reportActions: {
+    gap: 8,
+    alignItems: 'stretch',
+  },
+  shareButton: {
+    backgroundColor: '#0f766e',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+  },
   viewButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  shareButtonText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',

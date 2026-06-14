@@ -10,9 +10,10 @@ router.get("/user/:userId", authenticateToken, async (req, res) => {
     return res.status(403).json({ message: "Access denied" });
   }
   try {
-    const score = await CreditScore.getLatestScore(req.params.userId);
+    let score = await CreditScore.getLatestScore(req.params.userId);
     if (!score) {
-      return res.status(404).json({ message: "Credit score not found for this user" });
+      await creditScoreService.calculateAndSaveCreditScore(req.params.userId);
+      score = await CreditScore.getLatestScore(req.params.userId);
     }
     res.json(score);
   } catch (error) {
@@ -26,8 +27,8 @@ router.post("/recalculate/:userId", authenticateToken, async (req, res) => {
     return res.status(403).json({ message: "Access denied" });
   }
   try {
-    await creditScoreService.calculateAndSaveCreditScore(req.params.userId);
-    res.json({ message: "Credit score recalculation initiated" });
+    const score = await creditScoreService.calculateAndSaveCreditScore(req.params.userId);
+    res.json({ message: "Credit score recalculated", score });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

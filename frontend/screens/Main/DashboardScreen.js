@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert } from 'react
 import CustomButton from '../../components/CustomButton';
 import TransactionItem from '../../components/TransactionItem';
 import api from '../../config/api';
+<<<<<<< Updated upstream
 import { getAllTransactions, getUnsyncedTransactions, markTransactionsAsSynced } from '../../utils/database';
 import useAuth from '../../hooks/useAuth';
 import { useFocusEffect } from '@react-navigation/native';
@@ -10,6 +11,94 @@ import { useFocusEffect } from '@react-navigation/native';
 const DashboardScreen = ({ navigation }) => {
   const { userId, userToken } = useAuth();
   const [stats, setStats] = useState({ totalSales: 0, totalExpenses: 0, creditScore: 0 });
+=======
+import { getAllTransactions, getUnsyncedTransactions, markTransactionsAsSynced } from '../../utils/database';
+import useAuth from '../../hooks/useAuth';
+import { useFocusEffect } from '@react-navigation/native';
+
+const isIncome = (type) => type === 'sale' || type === 'mobile_money_in';
+const isExpense = (type) => type === 'expense' || type === 'mobile_money_out';
+
+const buildInsight = ({ transactionCount, netProfit, totalSales, totalExpenses }) => {
+  if (transactionCount === 0) {
+    return "Start by recording today's sales and expenses so your business history can grow.";
+  }
+  if (netProfit < 0) {
+    return "Expenses are higher than sales. Review your largest cost categories before adding new stock.";
+  }
+  if (totalSales > 0 && totalExpenses / totalSales > 0.75) {
+    return "Expenses are using most of your sales. Look for one cost you can reduce this week.";
+  }
+  return "Your records are up to date locally. Sync keeps your credit profile backed up.";
+};
+
+const buildLocalStats = (localTransactions, creditScore = 0) => {
+  const now = Date.now();
+  const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+  const categoryTotals = {};
+  const categoryCounts = {};
+
+  const totals = localTransactions.reduce(
+    (acc, tx) => {
+      const amount = Number(tx.amount || 0);
+      const txTime = new Date(tx.date).getTime();
+
+      if (isIncome(tx.type)) {
+        acc.totalSales += amount;
+        if (txTime >= thirtyDaysAgo) acc.recentSales += amount;
+      }
+      if (isExpense(tx.type)) {
+        acc.totalExpenses += amount;
+        if (txTime >= thirtyDaysAgo) acc.recentExpenses += amount;
+      }
+
+      categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + amount;
+      categoryCounts[tx.category] = (categoryCounts[tx.category] || 0) + 1;
+      return acc;
+    },
+    { totalSales: 0, totalExpenses: 0, recentSales: 0, recentExpenses: 0 }
+  );
+
+  const transactionCount = localTransactions.length;
+  const netProfit = totals.totalSales - totals.totalExpenses;
+  const topCategoryEntry = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
+
+  return {
+    totalSales: totals.totalSales,
+    totalExpenses: totals.totalExpenses,
+    netProfit,
+    transactionCount,
+    averageTransaction:
+      transactionCount > 0
+        ? localTransactions.reduce((sum, tx) => sum + Number(tx.amount || 0), 0) / transactionCount
+        : 0,
+    creditScore,
+    topCategory: topCategoryEntry
+      ? { category: topCategoryEntry[0], total: topCategoryEntry[1], transactionCount: categoryCounts[topCategoryEntry[0]] }
+      : null,
+    recentTrend: {
+      recentSales: totals.recentSales,
+      recentExpenses: totals.recentExpenses,
+      recentNetProfit: totals.recentSales - totals.recentExpenses,
+    },
+    insight: buildInsight({ transactionCount, netProfit, totalSales: totals.totalSales, totalExpenses: totals.totalExpenses }),
+  };
+};
+
+const DashboardScreen = ({ navigation }) => {
+  const { userId, userToken } = useAuth();
+  const [stats, setStats] = useState({
+    totalSales: 0,
+    totalExpenses: 0,
+    netProfit: 0,
+    transactionCount: 0,
+    averageTransaction: 0,
+    creditScore: 0,
+    topCategory: null,
+    recentTrend: { recentSales: 0, recentExpenses: 0, recentNetProfit: 0 },
+    insight: 'Record transactions to start building business insights.',
+  });
+>>>>>>> Stashed changes
   const [transactions, setTransactions] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -19,13 +108,17 @@ const DashboardScreen = ({ navigation }) => {
       // Sync local data first
       await syncLocalData();
 
-      // Fetch dashboard stats from backend
-      const statsResponse = await api.get(`/dashboard/${userId}`);
-      setStats(statsResponse.data);
+      const [statsResponse, localTransactions] = await Promise.all([
+        api.get(`/dashboard/${userId}`),
+        getAllTransactions(userId),
+      ]);
 
-      // Fetch all transactions from local DB (including newly synced ones)
-      const localTransactions = await getAllTransactions(userId);
       setTransactions(localTransactions);
+      setStats(
+        localTransactions.length > 0
+          ? buildLocalStats(localTransactions, statsResponse.data.creditScore)
+          : statsResponse.data
+      );
 
     } catch (error) {
       console.error("Error fetching dashboard data or syncing", error);
@@ -57,6 +150,7 @@ const DashboardScreen = ({ navigation }) => {
     }, [fetchDashboardData])
   );
 
+<<<<<<< Updated upstream
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchDashboardData().then(() => setRefreshing(false));
@@ -67,6 +161,22 @@ const DashboardScreen = ({ navigation }) => {
       style={styles.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
+=======
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchDashboardData().then(() => setRefreshing(false));
+  }, [fetchDashboardData]);
+
+  const money = (value) => `$${Number(value || 0).toFixed(2)}`;
+  const netProfitColor = stats.netProfit >= 0 ? '#047857' : '#b91c1c';
+
+  return (
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
+>>>>>>> Stashed changes
       <Text style={styles.title}>Your Business Overview</Text>
 
       <View style={styles.card}>
@@ -117,7 +227,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f7fafc',
+  },
+  contentContainer: {
     padding: 20,
+    paddingBottom: 40,
   },
   title: {
     fontSize: 28,

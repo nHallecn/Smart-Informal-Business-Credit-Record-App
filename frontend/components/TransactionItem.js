@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const TransactionItem = ({ transaction }) => {
-  const isSale = transaction.type === 'sale';
+  const isSale = transaction.type === 'sale' || transaction.type === 'mobile_money_in';
   const amountColor = isSale ? '#28a745' : '#dc3545';
 
   return (

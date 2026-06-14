@@ -11,13 +11,19 @@ router.get("/:userId", authenticateToken, async (req, res) => {
 
   try {
     const [summary, latestScore] = await Promise.all([
-      Transaction.getSummaryByUserId(req.params.userId),
+      Transaction.getDashboardInsights(req.params.userId),
       CreditScore.getLatestScore(req.params.userId),
     ]);
 
     res.json({
       totalSales: summary.totalSales,
       totalExpenses: summary.totalExpenses,
+      netProfit: summary.netProfit,
+      transactionCount: summary.transactionCount,
+      averageTransaction: summary.averageTransaction,
+      topCategory: summary.topCategory,
+      recentTrend: summary.recentTrend,
+      insight: summary.insight,
       creditScore: latestScore?.score_value || 0,
     });
   } catch (error) {

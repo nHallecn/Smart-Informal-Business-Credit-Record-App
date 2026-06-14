@@ -9,7 +9,17 @@ import { useFocusEffect } from '@react-navigation/native';
 
 const DashboardScreen = ({ navigation }) => {
   const { userId, userToken } = useAuth();
-  const [stats, setStats] = useState({ totalSales: 0, totalExpenses: 0, creditScore: 0 });
+  const [stats, setStats] = useState({
+    totalSales: 0,
+    totalExpenses: 0,
+    netProfit: 0,
+    transactionCount: 0,
+    averageTransaction: 0,
+    creditScore: 0,
+    topCategory: null,
+    recentTrend: { recentSales: 0, recentExpenses: 0, recentNetProfit: 0 },
+    insight: 'Record transactions to start building business insights.',
+  });
   const [transactions, setTransactions] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -62,6 +72,9 @@ const DashboardScreen = ({ navigation }) => {
     fetchDashboardData().then(() => setRefreshing(false));
   }, [fetchDashboardData]);
 
+  const money = (value) => `$${Number(value || 0).toFixed(2)}`;
+  const netProfitColor = stats.netProfit >= 0 ? '#047857' : '#b91c1c';
+
   return (
     <ScrollView
       style={styles.container}
@@ -83,11 +96,48 @@ const DashboardScreen = ({ navigation }) => {
       <View style={styles.statsRow}>
         <View style={[styles.statBox, { backgroundColor: '#e6fffa' }]}>
           <Text style={styles.statLabel}>Total Sales</Text>
-          <Text style={styles.statValue}>${stats.totalSales.toFixed(2)}</Text>
+          <Text style={styles.statValue}>{money(stats.totalSales)}</Text>
         </View>
         <View style={[styles.statBox, { backgroundColor: '#fff5f5' }]}>
           <Text style={styles.statLabel}>Total Expenses</Text>
-          <Text style={styles.statValue}>${stats.totalExpenses.toFixed(2)}</Text>
+          <Text style={styles.statValue}>{money(stats.totalExpenses)}</Text>
+        </View>
+      </View>
+
+      <View style={styles.insightPanel}>
+        <View style={styles.insightHeader}>
+          <View>
+            <Text style={styles.panelLabel}>Net Profit</Text>
+            <Text style={[styles.netProfitValue, { color: netProfitColor }]}>{money(stats.netProfit)}</Text>
+          </View>
+          <View style={styles.countBadge}>
+            <Text style={styles.countValue}>{stats.transactionCount}</Text>
+            <Text style={styles.countLabel}>Records</Text>
+          </View>
+        </View>
+
+        <View style={styles.metricsGrid}>
+          <View style={styles.metricItem}>
+            <Text style={styles.metricLabel}>Average Entry</Text>
+            <Text style={styles.metricValue}>{money(stats.averageTransaction)}</Text>
+          </View>
+          <View style={styles.metricItem}>
+            <Text style={styles.metricLabel}>Top Category</Text>
+            <Text style={styles.metricValue}>{stats.topCategory?.category || 'None yet'}</Text>
+          </View>
+          <View style={styles.metricItem}>
+            <Text style={styles.metricLabel}>30-Day Sales</Text>
+            <Text style={styles.metricValue}>{money(stats.recentTrend?.recentSales)}</Text>
+          </View>
+          <View style={styles.metricItem}>
+            <Text style={styles.metricLabel}>30-Day Expenses</Text>
+            <Text style={styles.metricValue}>{money(stats.recentTrend?.recentExpenses)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.recommendationBox}>
+          <Text style={styles.recommendationLabel}>Insight</Text>
+          <Text style={styles.recommendationText}>{stats.insight}</Text>
         </View>
       </View>
 
@@ -137,6 +187,87 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  insightPanel: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  insightHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  panelLabel: {
+    fontSize: 13,
+    color: '#64748b',
+    marginBottom: 4,
+  },
+  netProfitValue: {
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  countBadge: {
+    minWidth: 74,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: '#eef2ff',
+    alignItems: 'center',
+  },
+  countValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#3730a3',
+  },
+  countLabel: {
+    fontSize: 11,
+    color: '#475569',
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  metricItem: {
+    width: '48%',
+    minHeight: 70,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#f8fafc',
+    marginBottom: 10,
+  },
+  metricLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    marginBottom: 6,
+  },
+  metricValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+  },
+  recommendationBox: {
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#ecfeff',
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+  },
+  recommendationLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#0e7490',
+    marginBottom: 4,
+  },
+  recommendationText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#164e63',
   },
   cardTitle: {
     color: '#cbd5e0',

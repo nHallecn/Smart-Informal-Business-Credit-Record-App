@@ -17,7 +17,7 @@ const LoginScreen = ({ navigation }) => {
       await AsyncStorage.setItem('userToken', token);
       await AsyncStorage.setItem('userId', userId);
       await AsyncStorage.setItem('userRole', role);
-      signIn(token); // Update auth context
+      signIn(token, userId, role);
     } catch (error) {
       Alert.alert('Login Failed', error.response?.data?.message || 'An error occurred');
     }

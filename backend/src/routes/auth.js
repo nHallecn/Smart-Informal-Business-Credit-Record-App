@@ -5,17 +5,28 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 router.post("/register", async (req, res) => {
-  const { username, phoneNumber, password } = req.body;
+  const { username, email, phoneNumber, password } = req.body;
+  if (!username || !phoneNumber || !password) {
+    return res.status(400).json({ message: "Username, phone number, and password are required" });
+  }
+
   try {
-    const user = await User.create({ username, phoneNumber, password });
+    const user = await User.create({ username, email, phoneNumber, password });
     res.status(201).json({ message: "User registered successfully", userId: user.userId });
   } catch (error) {
+    if (error.code === "23505") {
+      return res.status(409).json({ message: "Username, email, or phone number is already registered" });
+    }
     res.status(500).json({ error: error.message });
   }
 });
 
 router.post("/login", async (req, res) => {
   const { phoneNumber, password } = req.body;
+  if (!phoneNumber || !password) {
+    return res.status(400).json({ message: "Phone number and password are required" });
+  }
+
   try {
     const user = await User.findByPhoneNumber(phoneNumber);
     if (!user) {

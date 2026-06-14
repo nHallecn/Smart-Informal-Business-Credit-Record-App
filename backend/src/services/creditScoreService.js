@@ -15,12 +15,13 @@ class CreditScoreService {
     let totalExpenseAmount = 0;
 
     transactions.forEach(tx => {
-      if (tx.type === "sale") {
+      const amount = Number(tx.amount);
+      if (tx.type === "sale" || tx.type === "mobile_money_in") {
         salesCount++;
-        totalSalesAmount += tx.amount;
-      } else if (tx.type === "expense") {
+        totalSalesAmount += amount;
+      } else if (tx.type === "expense" || tx.type === "mobile_money_out") {
         expenseCount++;
-        totalExpenseAmount += tx.amount;
+        totalExpenseAmount += amount;
       }
     });
 

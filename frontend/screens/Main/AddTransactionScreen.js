@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Alert, Picker } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import CustomButton from '../../components/CustomButton';
 import { addTransaction } from '../../utils/database';
 import useAuth from '../../hooks/useAuth';

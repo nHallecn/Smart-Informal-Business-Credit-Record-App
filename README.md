@@ -1,62 +1,61 @@
 # Smart Informal Business Credit & Record App
 
-## 📱 Project Overview
+Mobile-first financial records and credit scoring for informal traders and small business owners.
 
-**Smart Informal Business Credit & Record App** is a mobile-first financial record and credit scoring solution designed for informal traders and small business owners across African markets.
+## Stack
 
-The platform helps business owners:
+- Frontend: React Native with Expo, local SQLite storage for offline transaction capture.
+- Backend: Node.js, Express, JWT authentication, PostgreSQL.
+- Database: PostgreSQL schema with UUID primary keys, JSONB scoring/report metadata, sync-friendly timestamps and indexes.
 
-* Record daily sales and expenses
-* Build a verifiable financial history
-* Automatically generate a creditworthiness score
-* Share financial reports securely with lenders and cooperatives
-* Access insights to improve business growth
+## Core Features
 
-The system is built with an **offline-first architecture** to function in low-connectivity environments.
+- Register and log in business owners.
+- Record sales and expenses locally while offline.
+- Sync local transactions to the backend when the app is online.
+- Calculate a rule-based credit score from transaction history.
+- View dashboard totals and latest score.
+- Generate and view simple financial report files.
 
----
+## Backend Setup
 
-## 🎯 Objectives
+1. Create a PostgreSQL database:
 
-* Enable simple daily transaction logging
-* Automatically compute rule-based credit scores
-* Integrate with mobile money systems (MTN MoMo / Orange-style APIs)
-* Provide growth insights and analytics
-* Allow secure sharing of verified reports
-* Offer admin tools for verification and risk analysis
+   ```bash
+   createdb smart_business_credit
+   ```
 
----
+2. Configure environment variables:
 
-## 🏗 System Architecture
+   ```bash
+   cd backend
+   cp .env.example .env
+   ```
 
-### 📲 Frontend (Mobile App)
+   Update `DATABASE_URL` and `JWT_SECRET` in `backend/.env`.
 
-* **React Native (Expo)**
-* Offline-first data storage (SQLite / local database)
-* Auto-sync when internet becomes available
+3. Install dependencies and create tables:
 
-### 🖥 Backend
+   ```bash
+   npm install
+   npm run db:migrate
+   npm run dev
+   ```
 
-* **Node.js**
-* RESTful API
-* JWT Authentication
-* Role-Based Access Control (RBAC)
+The API runs on `http://localhost:3000` by default.
 
-### 🗄 Database
+## Frontend Setup
 
-* **MySQL**
-* Stores users, transactions, credit scores, repor
+```bash
+cd frontend
+npm install
+```
 
-### ☁ Deployment (Planned)
+For a physical phone, set the backend URL to your computer's LAN IP:
 
-* AWS / Cloud-hosted infrastructure
-* Scalable to 1,000+ users initially
+```bash
+EXPO_PUBLIC_API_BASE_URL=http://YOUR_COMPUTER_IP:3000/api
+npm start
+```
 
----
-
-## 👥 Stakeholders
-
-* Informal Business Owners (Primary users)
-* Admins / Partners
-* Lenders & Cooperatives
-* Developers
+For a simulator on the same machine, the default is `http://localhost:3000/api`.

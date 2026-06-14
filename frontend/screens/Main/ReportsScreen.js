@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
-import api from '../../config/api';
+import api, { API_BASE_URL } from '../../config/api';
 import useAuth from '../../hooks/useAuth';
 import CustomButton from '../../components/CustomButton';
 
@@ -48,7 +48,7 @@ const ReportsScreen = () => {
     // In a real app, you'd likely open a PDF viewer or browser for the report URL
     // For this example, we'll just try to open it with Linking
     if (reportUrl) {
-      const fullUrl = `http://YOUR_BACKEND_IP:3000${reportUrl}`; // Adjust if reports are served differently
+      const fullUrl = `${API_BASE_URL.replace(/\/api$/, '')}${reportUrl}`;
       const supported = await Linking.canOpenURL(fullUrl );
       if (supported) {
         await Linking.openURL(fullUrl);

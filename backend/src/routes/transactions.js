@@ -5,14 +5,16 @@ const Transaction = require("../models/Transaction");
 
 // Add a new transaction
 router.post("/", authenticateToken, async (req, res) => {
-  const { type, amount, category, paymentMethod, transactionDate } = req.body;
+  const { type, amount, category, description, paymentMethod, mobileMoneyRef, transactionDate } = req.body;
   try {
     const newTransaction = await Transaction.create({
       userId: req.user.userId,
       type,
       amount,
       category,
+      description,
       paymentMethod,
+      mobileMoneyRef,
       transactionDate,
     });
     res.status(201).json(newTransaction);
